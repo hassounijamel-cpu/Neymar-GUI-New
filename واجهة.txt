@@ -1,0 +1,249 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- ================= ScreenGui =================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- ================= MAIN =================
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0,650,0,420)
+Main.Position = UDim2.new(0.5,-325,0.5,-210)
+Main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.ClipsDescendants = false
+Main.ZIndex = 1
+
+-- ================= خلفية =================
+local BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Parent = Main
+BackgroundImage.Size = UDim2.new(1,0,1,0)
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.Image = "rbxassetid://125602848737897"
+BackgroundImage.ScaleType = Enum.ScaleType.Crop
+
+-- ================= حواف متحركة =================
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Thickness = 6
+
+local Gradient = Instance.new("UIGradient", Stroke)
+Gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,60,200)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0))
+}
+Gradient.Offset = Vector2.new(-1,0)
+
+task.spawn(function()
+	while true do
+		for i=-1,1,0.02 do
+			Gradient.Offset = Vector2.new(i,0)
+			task.wait(0.01)
+		end
+	end
+end)
+
+-- ================= صورة فوق يسار =================
+local SideImage = Instance.new("ImageLabel")
+SideImage.Parent = Main
+SideImage.Size = UDim2.new(0,200,0,200)
+SideImage.Position = UDim2.new(0,-80,0,-130)
+SideImage.BackgroundTransparency = 1
+SideImage.Image = "rbxassetid://108944065065556"
+SideImage.ScaleType = Enum.ScaleType.Fit
+SideImage.ZIndex = 5
+
+-- ================= أزرار أعلى =================
+local TopFrame = Instance.new("Frame",Main)
+TopFrame.Size = UDim2.new(0,90,0,40)
+TopFrame.Position = UDim2.new(1,-100,0,10)
+TopFrame.BackgroundTransparency = 1
+TopFrame.ZIndex = 10
+
+local function createTopButton(text,posX,color)
+	local b = Instance.new("TextButton",TopFrame)
+	b.Size = UDim2.new(0,35,0,35)
+	b.Position = UDim2.new(0,posX,0,0)
+	b.Text = text
+	b.BackgroundColor3 = color
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.SourceSansBold
+	b.TextScaled = true
+	b.BorderSizePixel = 0
+	b.ZIndex = 11
+	
+	local corner = Instance.new("UICorner",b)
+	corner.CornerRadius = UDim.new(0,8)
+	
+	return b
+end
+
+local Minimize = createTopButton("-",0,Color3.fromRGB(30,30,30))
+local Close = createTopButton("X",45,Color3.fromRGB(180,50,50))
+
+-- ================= Container =================
+local Container = Instance.new("Frame",Main)
+Container.Size = UDim2.new(1,-20,1,-20)
+Container.Position = UDim2.new(0,10,0,10)
+Container.BackgroundTransparency = 1
+
+-- قسمين
+local Left = Instance.new("ScrollingFrame",Container)
+Left.Size = UDim2.new(0,150,1,0)
+Left.BackgroundTransparency = 1
+Left.CanvasSize = UDim2.new(0,0,0,500)
+Left.ScrollBarThickness = 6
+
+local Right = Instance.new("ScrollingFrame",Container)
+Right.Size = UDim2.new(1,-160,1,0)
+Right.Position = UDim2.new(0,160,0,0)
+Right.BackgroundTransparency = 1
+Right.CanvasSize = UDim2.new(0,0,0,500)
+Right.ScrollBarThickness = 6
+
+-- ================= أزرار يسار =================
+local function addButton(name,text,yPos)
+	local b = Instance.new("TextButton",Left)
+	b.Size = UDim2.new(1,-10,0,50)
+	b.Position = UDim2.new(0,5,0,yPos)
+	b.BackgroundColor3 = Color3.new(0,0,0)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Text = name
+	b.Font = Enum.Font.SourceSansBold
+	b.TextScaled = true
+	b.BorderSizePixel = 0
+	
+	local corner = Instance.new("UICorner",b)
+	corner.CornerRadius = UDim.new(0,12)
+
+	b.MouseButton1Click:Connect(function()
+		Right:ClearAllChildren()
+		local lbl = Instance.new("TextLabel",Right)
+		lbl.Size = UDim2.new(1,0,0,60)
+		lbl.BackgroundTransparency = 1
+		lbl.Text = text
+		lbl.TextColor3 = Color3.new(1,1,1)
+		lbl.TextScaled = true
+		lbl.Font = Enum.Font.SourceSansBold
+	end)
+end
+
+addButton("سكربت 1","هذا السكربت الأول",0)
+addButton("سكربت 2","هذا السكربت الثاني",60)
+addButton("سكربت 3","هذا السكربت الثالث",120)
+
+-- ================= تصغير =================
+local minimized = false
+
+Minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	
+	if minimized then
+		Container.Visible = false
+	else
+		Container.Visible = true
+	end
+end)
+
+-- ================= Confirm Delete (مُصحّح بالكامل) =================
+local Confirm = Instance.new("Frame")
+Confirm.Parent = ScreenGui
+Confirm.Size = UDim2.new(0,300,0,150)
+Confirm.Position = UDim2.new(0.5,-150,0.5,-75)
+Confirm.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Confirm.Visible = false
+Confirm.ZIndex = 100
+
+local ConfirmCorner = Instance.new("UICorner",Confirm)
+ConfirmCorner.CornerRadius = UDim.new(0,12)
+
+local txt = Instance.new("TextLabel")
+txt.Parent = Confirm
+txt.Size = UDim2.new(1,0,0.5,0)
+txt.BackgroundTransparency = 1
+txt.Text = "هل انت متأكد بحذف السكربت"
+txt.TextColor3 = Color3.new(1,1,1)
+txt.TextScaled = true
+txt.Font = Enum.Font.SourceSansBold
+txt.ZIndex = 101
+
+local function confirmBtn(name,pos)
+	local b = Instance.new("TextButton")
+	b.Parent = Confirm
+	b.Size = UDim2.new(0.4,0,0.3,0)
+	b.Position = pos
+	b.BackgroundColor3 = Color3.new(0,0,0)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Text = name
+	b.Font = Enum.Font.SourceSansBold
+	b.TextScaled = true
+	b.ZIndex = 101
+	
+	local corner = Instance.new("UICorner",b)
+	corner.CornerRadius = UDim.new(0,12)
+	
+	return b
+end
+
+local Yes = confirmBtn("نعم",UDim2.new(0.05,0,0.6,0))
+local No = confirmBtn("لا",UDim2.new(0.55,0,0.6,0))
+
+Close.MouseButton1Click:Connect(function()
+	Confirm.Visible = true
+end)
+
+Yes.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+No.MouseButton1Click:Connect(function()
+	Confirm.Visible = false
+end)
+
+-- ================= سحب بسلاسة =================
+local dragging = false
+local dragStart
+local startPos
+local targetPosition = Main.Position
+
+Main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Main.Position
+	end
+end)
+
+Main.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement 
+	or input.UserInputType == Enum.UserInputType.Touch) then
+		
+		local delta = input.Position - dragStart
+		
+		targetPosition = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	Main.Position = Main.Position:Lerp(targetPosition, 0.15)
+end)
